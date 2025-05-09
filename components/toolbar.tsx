@@ -45,6 +45,7 @@ type ToolProps = {
   }: {
     appendMessage: UseChatHelpers['append'];
   }) => void;
+  executeImmediately?: boolean;
 };
 
 const Tool = ({
@@ -57,6 +58,7 @@ const Tool = ({
   isAnimating,
   append,
   onClick,
+  executeImmediately,
 }: ToolProps) => {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -69,6 +71,12 @@ const Tool = ({
   const handleSelect = () => {
     if (!isToolbarVisible && setIsToolbarVisible) {
       setIsToolbarVisible(true);
+      return;
+    }
+
+    if (executeImmediately) {
+      onClick({ appendMessage: append });
+      setSelectedTool(null);
       return;
     }
 
@@ -277,6 +285,7 @@ export const Tools = ({
               append={append}
               isAnimating={isAnimating}
               onClick={secondaryTool.onClick}
+              executeImmediately={secondaryTool.executeImmediately}
             />
           ))}
       </AnimatePresence>
@@ -291,6 +300,7 @@ export const Tools = ({
         append={append}
         isAnimating={isAnimating}
         onClick={primaryTool.onClick}
+        executeImmediately={primaryTool.executeImmediately}
       />
     </motion.div>
   );
@@ -304,6 +314,7 @@ const PureToolbar = ({
   stop,
   setMessages,
   artifactKind,
+  customTools,
 }: {
   isToolbarVisible: boolean;
   setIsToolbarVisible: Dispatch<SetStateAction<boolean>>;
@@ -312,6 +323,7 @@ const PureToolbar = ({
   stop: UseChatHelpers['stop'];
   setMessages: UseChatHelpers['setMessages'];
   artifactKind: ArtifactKind;
+  customTools?: Array<ArtifactToolbarItem>;
 }) => {
   const toolbarRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
@@ -363,7 +375,7 @@ const PureToolbar = ({
     throw new Error('Artifact definition not found!');
   }
 
-  const toolsByArtifactKind = artifactDefinition.toolbar;
+  const toolsByArtifactKind = customTools || artifactDefinition.toolbar;
 
   if (toolsByArtifactKind.length === 0) {
     return null;
@@ -456,6 +468,7 @@ export const Toolbar = memo(PureToolbar, (prevProps, nextProps) => {
   if (prevProps.status !== nextProps.status) return false;
   if (prevProps.isToolbarVisible !== nextProps.isToolbarVisible) return false;
   if (prevProps.artifactKind !== nextProps.artifactKind) return false;
+  if (prevProps.customTools !== nextProps.customTools) return false;
 
   return true;
 });

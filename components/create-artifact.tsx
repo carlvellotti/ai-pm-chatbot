@@ -30,6 +30,8 @@ export type ArtifactToolbarItem = {
   description: string;
   icon: ReactNode;
   onClick: (context: ArtifactToolbarContext) => void;
+  actionId?: string;
+  executeImmediately?: boolean;
 };
 
 interface ArtifactContent<M = any> {
