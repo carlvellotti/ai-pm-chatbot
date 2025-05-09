@@ -101,16 +101,6 @@ export function createSuggestionWidget(
       });
       dispatch(decorationTransaction);
     }
-
-    const textTransaction = view.state.tr.replaceWith(
-      suggestion.selectionStart,
-      suggestion.selectionEnd,
-      state.schema.text(suggestion.suggestedText),
-    );
-
-    textTransaction.setMeta('no-debounce', true);
-
-    dispatch(textTransaction);
   };
 
   root.render(

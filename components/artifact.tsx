@@ -28,6 +28,9 @@ import { textArtifact } from '@/artifacts/text/client';
 import equal from 'fast-deep-equal';
 import type { UseChatHelpers } from '@ai-sdk/react';
 import type { VisibilityType } from './visibility-selector';
+import { ArtifactToolbarItem } from './create-artifact';
+import { toast } from 'sonner';
+import { MessageIcon, PenIcon, CodeIcon, SparklesIcon, UserIcon } from '@/components/icons';
 
 export const artifactDefinitions = [
   textArtifact,
@@ -101,6 +104,7 @@ function PureArtifact({
   const [mode, setMode] = useState<'edit' | 'diff'>('edit');
   const [document, setDocument] = useState<Document | null>(null);
   const [currentVersionIndex, setCurrentVersionIndex] = useState(-1);
+  const [showPersonaSelector, setShowPersonaSelector] = useState(false);
 
   const { open: isSidebarOpen } = useSidebar();
 
@@ -253,6 +257,54 @@ function PureArtifact({
       }
     }
   }, [artifact.documentId, artifactDefinition, setMetadata]);
+
+  // Define personas
+  const personas = [
+    { name: 'Executive', descriptionText: 'As Executive', icon: <PenIcon /> },
+    { name: 'Engineer', descriptionText: 'As Engineer', icon: <CodeIcon /> },
+    { name: 'Designer', descriptionText: 'As Designer', icon: <SparklesIcon /> },
+    { name: 'General', descriptionText: 'General Review', icon: <UserIcon /> },
+  ];
+
+  // Dynamically build toolbarItems
+  const dynamicToolbarItems: ArtifactToolbarItem[] = [];
+  if (artifactDefinition.toolbar) {
+    artifactDefinition.toolbar.forEach(item => {
+      if (item.actionId === 'requestSuggestions') {
+        if (showPersonaSelector) {
+          personas.forEach(persona => {
+            dynamicToolbarItems.push({
+              description: persona.descriptionText,
+              icon: persona.icon,
+              onClick: () => {
+                if (!artifact.documentId || artifact.documentId === 'init') {
+                  toast.error("Document not available for suggestions.");
+                  setShowPersonaSelector(false);
+                  return;
+                }
+                append({
+                  role: 'user',
+                  content: `Request suggestions for document ${artifact.documentId} as ${persona.name}.`,
+                });
+                setShowPersonaSelector(false);
+              },
+              executeImmediately: true,
+            });
+          });
+        } else {
+          dynamicToolbarItems.push({
+            ...item,
+            onClick: () => {
+              setShowPersonaSelector(true);
+            },
+            executeImmediately: true,
+          });
+        }
+      } else {
+        dynamicToolbarItems.push(item);
+      }
+    });
+  }
 
   return (
     <AnimatePresence>
@@ -481,6 +533,7 @@ function PureArtifact({
                     stop={stop}
                     setMessages={setMessages}
                     artifactKind={artifact.kind}
+                    customTools={dynamicToolbarItems}
                   />
                 )}
               </AnimatePresence>

@@ -63,13 +63,15 @@ export const Suggestion = ({
               <CrossIcon size={12} />
             </button>
           </div>
-          <div>{suggestion.description}</div>
+          <div>
+            <p>{suggestion.description}</p>
+          </div>
           <Button
             variant="outline"
             className="w-fit py-1.5 px-3 rounded-full"
             onClick={onApply}
           >
-            Apply
+            Dismiss
           </Button>
         </motion.div>
       )}
