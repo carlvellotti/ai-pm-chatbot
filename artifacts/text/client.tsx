@@ -166,11 +166,11 @@ export const textArtifact = new Artifact<'text', TextArtifactMetadata>({
     {
       icon: <MessageIcon />,
       description: 'Request suggestions',
+      actionId: 'requestSuggestions',
       onClick: ({ appendMessage }) => {
         appendMessage({
           role: 'user',
-          content:
-            'Please add suggestions you have that could improve the writing.',
+          content: 'Please provide suggestions for the current document.',
         });
       },
     },
